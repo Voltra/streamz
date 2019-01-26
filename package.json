@@ -1,5 +1,5 @@
 {
-  "name": "streamz",
+  "name": "@voltra/streamz",
   "version": "0.0.1",
   "description": "Collection manipulation library that uses lazy evaluation for performances",
   "main": "dist/index.js",

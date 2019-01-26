@@ -26,13 +26,13 @@ var __read = (this && this.__read) || function (o, n) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.KeyGen = {
-        object: function (_a) {
+        entries: function (_a) {
             var _b = __read(_a, 1), k = _b[0];
             return k;
         }
     };
     exports.ValueGen = {
-        object: function (_a) {
+        entries: function (_a) {
             var _b = __read(_a, 2), _ = _b[0], v = _b[1];
             return v;
         }
