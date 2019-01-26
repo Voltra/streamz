@@ -1,6 +1,10 @@
 import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator"
 import { invalidStreamIteratorPayload } from "../../abstractions/utils"
 
+/**
+ * @class TakeIterator
+ * An iterator that only accepts a fixed amount of items
+ */
 export class TakeIterator<T> implements BaseStreamIterator<T>{
     private _amount: number;
 

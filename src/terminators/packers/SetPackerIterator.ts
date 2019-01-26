@@ -2,6 +2,10 @@ import { EndStreamIterator } from "../../abstractions/EndStreamIterator";
 import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator";
 import { streamIsValidValue } from "../../abstractions/utils";
 
+/**
+ * @class SetPackerIterator
+ * An iterator that packs the input values into a set
+ */
 export class SetPackerIterator<T> implements EndStreamIterator<Set<T>, T>{
     public constructor(
         private parent: BaseStreamIterator<T>

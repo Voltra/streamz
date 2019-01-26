@@ -3,6 +3,11 @@ import { Mapper } from "../../types/functions";
 import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator";
 import { streamIsValidValue } from "../../abstractions/utils";
 
+/**
+ * @class ObjectPackerIterator
+ * An iterator that packs input into an object by computing both
+ * keys and values from the input values
+ */
 export class ObjectPackerIterator<T, U> implements EndStreamIterator<object, T>{
     public constructor(
         private parent: BaseStreamIterator<T>,

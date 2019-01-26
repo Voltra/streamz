@@ -1,5 +1,9 @@
 import { BaseStreamIterator } from "../abstractions/BaseStreamIterator"
 
+/**
+ * @class RangeIterator
+ * Creates an iterator for a range of numbers
+ */
 export class RangeIterator implements BaseStreamIterator<number>{
     private _lower: number;
 

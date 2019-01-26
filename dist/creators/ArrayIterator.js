@@ -9,6 +9,10 @@
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @class ArrayIterator
+     * Stream iterator for an array
+     */
     var ArrayIterator = (function () {
         function ArrayIterator(arr) {
             var _this = this;

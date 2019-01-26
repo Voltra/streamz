@@ -10,6 +10,10 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../abstractions/utils");
+    /**
+     * @class FilterIterator
+     * An iterator that filters elements according to a predicate
+     */
     var FilterIterator = (function () {
         function FilterIterator(parent, pred) {
             var _this = this;

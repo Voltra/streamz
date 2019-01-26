@@ -2,6 +2,10 @@ import { BaseStreamIterator } from "../abstractions/BaseStreamIterator";
 import { Predicate } from "../types/functions";
 import { invalidStreamIteratorPayload, streamIsValidValue } from "../abstractions/utils";
 
+/**
+ * @class FilterIterator
+ * An iterator that filters elements according to a predicate
+ */
 export class FilterIterator<T> implements BaseStreamIterator<T>{
     public constructor(
         private parent: BaseStreamIterator<T>,

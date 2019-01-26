@@ -10,6 +10,10 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../abstractions/utils");
+    /**
+     * @class UniqueIterator
+     * An iterator that only outputs unique items
+     */
     var UniqueIterator = (function () {
         function UniqueIterator(parent) {
             var _this = this;

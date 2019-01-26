@@ -10,6 +10,10 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../abstractions/utils");
+    /**
+     * @class PeekIterator
+     * An iterator that calls a function on each item
+     */
     var PeekIterator = (function () {
         function PeekIterator(parent, functor) {
             var _this = this;

@@ -2,6 +2,10 @@ import { BaseStreamIterator } from "../abstractions/BaseStreamIterator";
 import { Consumer } from "../types/functions";
 import { streamIsValidValue } from "../abstractions/utils";
 
+/**
+ * @class PeekIterator
+ * An iterator that calls a function on each item
+ */
 export class PeekIterator<T> implements BaseStreamIterator<T>{
     public constructor(
         private parent: BaseStreamIterator<T>,

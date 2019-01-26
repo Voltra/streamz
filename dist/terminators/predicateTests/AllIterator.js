@@ -10,6 +10,11 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AnyIterator_1 = require("./AnyIterator");
+    /**
+     * @class AllIterator
+     * An iterator that determines whether or not all items
+     * match a given requirement/predicate
+     */
     var AllIterator = (function () {
         function AllIterator(parent, pred) {
             var _this = this;

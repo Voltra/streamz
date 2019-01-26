@@ -10,6 +10,10 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../../abstractions/utils");
+    /**
+     * @class TakeIterator
+     * An iterator that only accepts a fixed amount of items
+     */
     var TakeIterator = (function () {
         function TakeIterator(parent, amount) {
             if (amount === void 0) { amount = 1; }

@@ -9,6 +9,10 @@
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @class RangeIterator
+     * Creates an iterator for a range of numbers
+     */
     var RangeIterator = (function () {
         function RangeIterator(lower, higher, step) {
             if (lower === void 0) { lower = 0; }

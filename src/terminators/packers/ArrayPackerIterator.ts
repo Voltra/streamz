@@ -2,6 +2,10 @@ import { EndStreamIterator } from "../../abstractions/EndStreamIterator";
 import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator";
 import { streamIsValidValue } from "../../abstractions/utils";
 
+/**
+ * @class ArrayPackerIterator
+ * An iterator that packs the input into an array
+ */
 export class ArrayPackerIterator<T> implements EndStreamIterator<T[], T>{
     public constructor(
         private parent: BaseStreamIterator<T>

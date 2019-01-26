@@ -10,6 +10,10 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../abstractions/utils");
+    /**
+     * @class ForEachIterator
+     * An iterator that applies a function on each item
+     */
     var ForEachIterator = (function () {
         function ForEachIterator(parent, functor) {
             this.parent = parent;

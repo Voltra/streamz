@@ -1,5 +1,9 @@
 import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator";
 
+/**
+ * @class SkipIterator
+ * Iterator that skips a given amount of items
+ */
 export class SkipIterator<T> implements BaseStreamIterator<T>{
     private _amount: number;
 

@@ -3,6 +3,11 @@ import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator";
 import { Predicate } from "../../types/functions";
 import { AnyIterator } from "./AnyIterator";
 
+/**
+ * @class AllIterator
+ * An iterator that determines whether or not all items
+ * match a given requirement/predicate
+ */
 export class AllIterator<T> implements EndStreamIterator<boolean, T>{
     private anyDelegate: AnyIterator<T>;
 

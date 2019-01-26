@@ -3,6 +3,11 @@ import { BaseStreamIterator } from "../abstractions/BaseStreamIterator"
 import { Reducer } from "../types/functions";
 import { streamIsValidValue } from "../abstractions/utils";
 
+/**
+ * @class ReduceIterator
+ * An iterator that reduces the items to a single result via
+ * an initial value and a reducer function
+ */
 export class ReduceIterator<Acc, T> implements EndStreamIterator<Acc, T>{
     public constructor(
         private parent: BaseStreamIterator<T>,

@@ -1,8 +1,8 @@
 import { BaseStreamIterator } from "./abstractions/BaseStreamIterator"
-import { StreamIterator } from "./abstractions/StreamIterator"
 import { Mapper, Predicate, Consumer, Reducer } from "./types/functions"
 
 import { ArrayIterator } from "./creators/ArrayIterator"
+import { ObjectIterator } from "./creators/ObjectIterator"
 import { RangeIterator } from "./creators/RangeIterator"
 
 import { MapIterator } from "./intermediary/MapIterator"
@@ -20,13 +20,12 @@ import { AllIterator } from "./terminators/predicateTests/AllIterator";
 import { AnyIterator } from "./terminators/predicateTests/AnyIterator";
 import { NoneIterator } from "./terminators/predicateTests/NoneIterator";
 
-import { ArrayPackerIterator } from "./terminators/packers/ArrayPackerIterator";
-import { ObjectPackerByIterator } from "./terminators/packers/ObjectPackerByIterator";
-import { ObjectPackerIterator } from "./terminators/packers/ObjectPackerIterator";
-import { SetPackerIterator } from "./terminators/packers/SetPackerIterator";
-import { MapPackerByIterator } from "./terminators/packers/MapPackerByIterator";
-import { MapPackerIterator } from "./terminators/packers/MapPackerIterator";
+import { Packer } from "./packer"
 
+/**
+ * @class Stream
+ * An object capable of lazily manipulating collections
+ */
 export class Stream<T>{
     /************************************************************************\
      * CONSTRUCTOR
@@ -40,20 +39,51 @@ export class Stream<T>{
     /************************************************************************\
      * FACTORIES
     \************************************************************************/
+    /**
+     * Create a stream from an iterator
+     * @return {Stream}
+     */
     private static make<T>(it: BaseStreamIterator<T>): Stream<T>{
         return new Stream<T>(it);
     }
 
+    /**
+     * Creates a stream from a comma separated list of arguments
+     * @param args - variadic arguments
+     */
     public static of<T>(...args: T[]): Stream<T>{
         return this.from<T>(args);
     }
 
+    /**
+     * Creates a stream from an array
+     * @param {T[]} args - The array to create a stream from
+     * @return {Stream}
+     */
     public static from<T>(args: T[]): Stream<T>{
         return this.make<T>(
             new ArrayIterator<T>(args)
         );
     }
 
+    /**
+     * Creates a stream from the entries of the given object
+     * @param obj - The object to create a stream from
+     * @return {Stream}
+     */
+    public static fromObject(obj: object): Stream<[string, any]>{
+        return this.make<[string, any]>(
+            new ObjectIterator(obj)
+        );
+    }
+
+    /**
+     * Creates a stream for a range of numbers
+     * @param {number} lower - The lower bound (or higher bound of no other parameters)
+     * @param {number|null} higher - The higher bound
+     * @param {number} step - The increment value
+     * @return {Stream}
+     */
     public static range(
         lower: number = 0,
         higher: number|null = null,
@@ -66,6 +96,12 @@ export class Stream<T>{
         return this.make<number>(it);
     }
 
+    /**
+     * Creates an infinite stream of values from the lower bound to positive infinity
+     * @param {number} lower - The lower bound
+     * @param {number} step - The increment value
+     * @return {Stream}
+     */
     public static infinite(lower: number = 0, step: number = 1): Stream<number>{
         return this.range(lower, Infinity, step);
     }
@@ -75,6 +111,10 @@ export class Stream<T>{
     /************************************************************************\
      * UTILS
     \************************************************************************/
+    /**
+     * Creates a "clone" of this stream using the iterators' cloning semantics
+     * @return {Stream}
+     */
     public clone(): Stream<T>{
         return Stream.make<T>(this.it.clone());
     }
@@ -84,24 +124,43 @@ export class Stream<T>{
     /************************************************************************\
      * INTERMEDIATES
     \************************************************************************/
+    /**
+     * Maps a T to a U using the given mapper funciton
+     * @param {Mapper<T, U>} mapper - The mapper function
+     * @return {Stream}
+     */
     public map<U>(mapper: Mapper<T, U>): Stream<U>{
         return Stream.make<U>(
             new MapIterator<T, U>(this.it, mapper)
         );
     }
 
+    /**
+     * FIlters values according to the given predicate
+     * @param {Predicate<T>} predicate - The predicate to match
+     * @return {Stream}
+     */
     public filter(predicate: Predicate<T>){
         return Stream.make<T>(
             new FilterIterator<T>(this.it, predicate)
         );
     }
 
+    /**
+     * Applies a function to each value and passes the value
+     * @param {Consumer<T>} functor - The function to call
+     * @return {Stream}
+     */
     public peek(functor: Consumer<T>){
         return Stream.make<T>(
             new PeekIterator<T>(this.it, functor)
         );
     }
 
+    /**
+     * Removes duplicates from the stream
+     * @return {Stream}
+     */
     public unique(){
         return Stream.make<T>(
             new UniqueIterator<T>(this.it)
@@ -111,18 +170,35 @@ export class Stream<T>{
         /********************************************************************\
          * INDEX MANIPULATION
         \********************************************************************/
+    /**
+     * Keeps exactly the given amount of items in the stream (or less if it can't)
+     * @param {number} amount - The maximum amount of items to keep
+     * @return {Stream}
+     */
     public take(amount: number = 10){
         return Stream.make<T>(
             new TakeIterator<T>(this.it, amount)
         );
     }
 
+    /**
+     * Skips exactly the given amount of items before passing its first value
+     * @param {number} amount - The maximum amount of items to skip
+     * @return {Stream}
+     */
     public skip(amount: number = 10){
         return Stream.make<T>(
             new SkipIterator<T>(this.it, amount)
         );
     }
 
+    /**
+     * Keeps only the items within the range [begin;end] or [begin;end) depending on a flag
+     * @param {number} begin - The index to begin from
+     * @param {number} end - The index to end from
+     * @param {boolean} excludeRight - Determines whether or not the end should be included or not
+     * @return {Stream}
+     */
     public between(begin: number = 0, end: number = 10, excludeRight: boolean = false){
         /* return Stream.make<T>(
             new BetweenIterator<T>(this.it, begin, end)
@@ -136,10 +212,20 @@ export class Stream<T>{
     /************************************************************************\
      * TERMINATORS
     \************************************************************************/
+    /**
+     * Consumes the stream and apply a function on each item
+     * @param {Consumer<T>} functor - The function to apply
+     */
     public forEach(functor: Consumer<T>): void{
         new ForEachIterator<T>(this.it, functor);
     }
 
+    /**
+     * Consumes the stream and reduces its values into a single result
+     * @param {Reducer<Acc, T>} reducer - The reducer function
+     * @param {Acc} acc - The initial value of the accumulator/result
+     * @return {Acc}
+     */
     public reduce<Acc>(reducer: Reducer<Acc, T>, acc: Acc): Acc{
         const it = new ReduceIterator<Acc, T>(this.it, reducer, acc);
         return it.process();
@@ -148,16 +234,31 @@ export class Stream<T>{
         /********************************************************************\
          * PREDICATE TESTS
         \********************************************************************/
+    /**
+     * Consumes the stream and tests whether or not all items matches the given predicate
+     * @param {Predicate<T>} predicate - The predicate to match
+     * @return {boolean}
+     */
     public all(predicate: Predicate<T>): boolean{
         const it = new AllIterator<T>(this.it, predicate);
         return it.process();
     }
 
+    /**
+     * Consumes the stream and tests whether or not any item matches the given predicate
+     * @param {Predicate<T>} predicate - The predicate to match
+     * @return {boolean}
+     */
     public any(predicate: Predicate<T>): boolean{
         const it = new AnyIterator<T>(this.it, predicate);
         return it.process();
     }
 
+    /**
+     * Consumes the stream and tests whether or not none of the items matches the given predicate
+     * @param {Predicate<T>} predicate - The predicate to match
+     * @return {boolean}
+     */
     public none(predicate: Predicate<T>): boolean{
         const it = new NoneIterator<T>(this.it, predicate);
         return it.process();
@@ -166,34 +267,11 @@ export class Stream<T>{
         /********************************************************************\
          * PACKERS
         \********************************************************************/
-    public pack = {
-        stream: this,
-        it(): BaseStreamIterator<T>{
-            return this.stream.it;
-        },
-        toArray(): T[]{
-            const it = new ArrayPackerIterator<T>(this.it());
-            return it.process();
-        },
-        toObjectBy(keyGen: Mapper<T, any>): object{
-            const it = new ObjectPackerByIterator<T>(this.it(), keyGen);
-            return it.process();
-        },
-        toObject<U>(keyGen: Mapper<T, any>, valueGen: Mapper<T, U>): object{
-            const it = new ObjectPackerIterator<T, U>(this.it(), keyGen, valueGen);
-            return it.process();
-        },
-        toSet(): Set<T>{
-            const it = new SetPackerIterator<T>(this.it());
-            return it.process();
-        },
-        toMapBy<K>(keyGen: Mapper<T, K>): Map<K, T>{
-            const it = new MapPackerByIterator<K, T>(this.it(), keyGen);
-            return it.process();
-        },
-        toMap<K, V>(keyGen: Mapper<T, K>, valueGen: Mapper<T, V>): Map<K, V>{
-            const it = new MapPackerIterator<K, V, T>(this.it(), keyGen, valueGen);
-            return it.process();
-        }
-    };
+    /**
+     * @var pack
+     * The packer for this stream
+     */
+    public get pack(): Packer<T>{
+        return new Packer(this.it);
+    }
 }

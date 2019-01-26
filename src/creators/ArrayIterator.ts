@@ -1,5 +1,9 @@
 import { BaseStreamIterator } from "../abstractions/BaseStreamIterator";
 
+/**
+ * @class ArrayIterator
+ * Stream iterator for an array
+ */
 export class ArrayIterator<T> implements BaseStreamIterator<T>{
     private index: number = 0;
 

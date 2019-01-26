@@ -10,6 +10,11 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AllIterator_1 = require("./AllIterator");
+    /**
+     * @class NoneIterator
+     * An iterator that determines whether or not none of the items
+     * matches a given requirement/predicate
+     */
     var NoneIterator = (function () {
         function NoneIterator(parent, pred) {
             var _this = this;

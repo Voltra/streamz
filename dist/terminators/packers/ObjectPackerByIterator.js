@@ -10,6 +10,11 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../../abstractions/utils");
+    /**
+     * @class ObjectPackerByIterator
+     * An iterator that packs values into an object by computing
+     * the keys from the input values
+     */
     var ObjectPackerByIterator = (function () {
         function ObjectPackerByIterator(parent, keyGen) {
             var _this = this;

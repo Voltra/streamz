@@ -3,6 +3,10 @@ import { BaseStreamIterator } from "../abstractions/BaseStreamIterator";
 import { Consumer } from "../types/functions";
 import { streamIsValidValue } from "../abstractions/utils";
 
+/**
+ * @class ForEachIterator
+ * An iterator that applies a function on each item
+ */
 export class ForEachIterator<T> implements EndStreamIterator<void, T>{
     public constructor(
         private parent: BaseStreamIterator<T>,

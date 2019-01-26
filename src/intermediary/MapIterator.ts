@@ -2,6 +2,10 @@ import { Mapper } from "../types/functions";
 import { BaseStreamIterator } from "../abstractions/BaseStreamIterator";
 import { invalidStreamIteratorPayload, streamIsValidValue } from "../abstractions/utils";
 
+/**
+ * @class MapIterator
+ * An iterator that maps the input to a given output using a mapper function
+ */
 export class MapIterator<T, U> implements BaseStreamIterator<U>{
     public constructor(
         private parent: BaseStreamIterator<T>,

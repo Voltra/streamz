@@ -10,6 +10,11 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../abstractions/utils");
+    /**
+     * @class ReduceIterator
+     * An iterator that reduces the items to a single result via
+     * an initial value and a reducer function
+     */
     var ReduceIterator = (function () {
         function ReduceIterator(parent, reducer, acc) {
             this.parent = parent;

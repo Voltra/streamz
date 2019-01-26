@@ -10,6 +10,11 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../../abstractions/utils");
+    /**
+     * @class AnyIterator
+     * An iterator that determines whether or not any item
+     * matches a given requirement/predicate
+     */
     var AnyIterator = (function () {
         function AnyIterator(parent, pred) {
             this.parent = parent;

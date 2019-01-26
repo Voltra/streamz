@@ -1,6 +1,10 @@
 import { BaseStreamIterator } from "../abstractions/BaseStreamIterator"
 import { streamIsValidValue, invalidStreamIteratorPayload } from "../abstractions/utils";
 
+/**
+ * @class UniqueIterator
+ * An iterator that only outputs unique items
+ */
 export class UniqueIterator<T> implements BaseStreamIterator<T>{
     private tagged: Set<T> = new Set<T>();
 

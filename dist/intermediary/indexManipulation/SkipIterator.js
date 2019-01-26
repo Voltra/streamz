@@ -9,6 +9,10 @@
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @class SkipIterator
+     * Iterator that skips a given amount of items
+     */
     var SkipIterator = (function () {
         function SkipIterator(parent, amount) {
             var _this = this;

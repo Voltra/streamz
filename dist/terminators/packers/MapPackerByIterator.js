@@ -10,6 +10,11 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../../abstractions/utils");
+    /**
+     * @class MapPackerByIterator
+     * An iterator that packs the input into a Map computing the keys from
+     * the input values
+     */
     var MapPackerByIterator = (function () {
         function MapPackerByIterator(parent, keyGen) {
             var _this = this;

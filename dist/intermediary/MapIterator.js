@@ -10,6 +10,10 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require("../abstractions/utils");
+    /**
+     * @class MapIterator
+     * An iterator that maps the input to a given output using a mapper function
+     */
     var MapIterator = (function () {
         function MapIterator(parent, mapper) {
             var _this = this;

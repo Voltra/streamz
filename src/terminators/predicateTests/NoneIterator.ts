@@ -3,6 +3,11 @@ import { AllIterator } from "./AllIterator";
 import { BaseStreamIterator } from "../../abstractions/BaseStreamIterator";
 import { Predicate } from "../../types/functions";
 
+/**
+ * @class NoneIterator
+ * An iterator that determines whether or not none of the items
+ * matches a given requirement/predicate
+ */
 export class NoneIterator<T> implements EndStreamIterator<boolean, T>{
     private allDelegate: AllIterator<T>;
 
