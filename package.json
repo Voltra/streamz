@@ -1,6 +1,6 @@
 {
   "name": "@voltra/streamz",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Collection manipulation library that uses lazy evaluation for performances",
   "main": "dist/index.js",
   "scripts": {
@@ -18,5 +18,17 @@
   "homepage": "https://github.com/Voltra/streamz#readme",
   "devDependencies": {
     "typescript": "^3.2.4"
-  }
+  },
+  "keywords": [
+    "functional",
+    "sequence",
+    "collection",
+    "processing",
+    "lazy",
+    "iterator",
+    "array",
+    "object",
+    "map",
+    "set"
+  ]
 }
