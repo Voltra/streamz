@@ -1,0 +1,22 @@
+{
+  "name": "streamz",
+  "version": "0.0.1",
+  "description": "Collection manipulation library that uses lazy evaluation for performances",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Voltra/streamz.git"
+  },
+  "author": "Ludwig GUERIN <ludwig.guerin.98@gmx.fr>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Voltra/streamz/issues"
+  },
+  "homepage": "https://github.com/Voltra/streamz#readme",
+  "devDependencies": {
+    "typescript": "^3.2.4"
+  }
+}
