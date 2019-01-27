@@ -4,7 +4,7 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./creators/ArrayIterator", "./creators/ObjectIterator", "./creators/RangeIterator", "./intermediary/MapIterator", "./intermediary/indexManipulation/TakeIterator", "./intermediary/FilterIterator", "./intermediary/PeekIterator", "./intermediary/UniqueIterator", "./intermediary/indexManipulation/SkipIterator", "./terminators/ForEachIterator", "./terminators/ReduceIterator", "./terminators/predicateTests/AllIterator", "./terminators/predicateTests/AnyIterator", "./terminators/predicateTests/NoneIterator", "./packer"], factory);
+        define(["require", "exports", "./creators/ArrayIterator", "./creators/ObjectIterator", "./creators/RangeIterator", "./intermediary/MapIterator", "./intermediary/indexManipulation/TakeIterator", "./intermediary/FilterIterator", "./intermediary/PeekIterator", "./intermediary/UniqueIterator", "./intermediary/UniqueByIterator", "./intermediary/ChunkIterator", "./intermediary/indexManipulation/SkipIterator", "./terminators/ForEachIterator", "./terminators/ReduceIterator", "./terminators/CountIterator", "./terminators/predicateTests/AllIterator", "./terminators/predicateTests/AnyIterator", "./terminators/predicateTests/NoneIterator", "./packer"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -17,10 +17,13 @@
     var FilterIterator_1 = require("./intermediary/FilterIterator");
     var PeekIterator_1 = require("./intermediary/PeekIterator");
     var UniqueIterator_1 = require("./intermediary/UniqueIterator");
+    var UniqueByIterator_1 = require("./intermediary/UniqueByIterator");
+    var ChunkIterator_1 = require("./intermediary/ChunkIterator");
     var SkipIterator_1 = require("./intermediary/indexManipulation/SkipIterator");
     // import { BetweenIterator } from "./intermediary/indexManipulation/BetweenIterator";
     var ForEachIterator_1 = require("./terminators/ForEachIterator");
     var ReduceIterator_1 = require("./terminators/ReduceIterator");
+    var CountIterator_1 = require("./terminators/CountIterator");
     var AllIterator_1 = require("./terminators/predicateTests/AllIterator");
     var AnyIterator_1 = require("./terminators/predicateTests/AnyIterator");
     var NoneIterator_1 = require("./terminators/predicateTests/NoneIterator");
@@ -34,7 +37,32 @@
          * CONSTRUCTOR
         \************************************************************************/
         function Stream(it) {
+            var _this = this;
             this.it = it;
+            /********************************************************************\
+             * FILTERING
+            \********************************************************************/
+            /**
+             * Only keeps non null items
+             * @return  {Stream}
+             */
+            this.nonNull = function () { return _this.filter(function (v) { return v !== null; }); };
+            /**
+             * Only keeps non falsy items
+             * @return  {Stream}
+             */
+            this.nonFalsy = function () { return _this.filter(function (v) { return !!v; }); };
+            /**
+             * Only keeps items that do not satisfy the given predicate
+             * @param {Predicate<T>} predicate - The predicate that must not be satisfied
+             * @return  {Stream}
+             */
+            this.filterNot = function (predicate) { return _this.filter(function (v) { return !predicate(v); }); };
+            /**
+             * @alias filterOut
+             * Alias for Stream#filterNot
+             */
+            this.filterOut = function (predicate) { return _this.filterNot(predicate); };
         }
         /************************************************************************\
          * FACTORIES
@@ -122,7 +150,7 @@
             return Stream.make(new MapIterator_1.MapIterator(this.it, mapper));
         };
         /**
-         * FIlters values according to the given predicate
+         * Filters values according to the given predicate
          * @param {Predicate<T>} predicate - The predicate to match
          * @return {Stream}
          */
@@ -143,6 +171,23 @@
          */
         Stream.prototype.unique = function () {
             return Stream.make(new UniqueIterator_1.UniqueIterator(this.it));
+        };
+        /**
+         * Removes duplicates based on a selector
+         * @param {Mapper<T, U>} selector - The mapper function that generates the "key" for comparison
+         * @return {Stream}
+         */
+        Stream.prototype.uniqueBy = function (selector) {
+            return Stream.make(new UniqueByIterator_1.UniqueByIterator(this.it, selector));
+        };
+        /**
+         * Puts the items of the stream into chunks
+         * @param {number} size - The max size of each chunk
+         * @return {Stream}
+         */
+        Stream.prototype.chunked = function (size) {
+            if (size === void 0) { size = 3; }
+            return Stream.make(new ChunkIterator_1.ChunkIterator(this.it, size));
         };
         /********************************************************************\
          * INDEX MANIPULATION
@@ -202,6 +247,16 @@
             var it = new ReduceIterator_1.ReduceIterator(this.it, reducer, acc);
             return it.process();
         };
+        /**
+         * Counts the amount of items (that satisfy the predicate if one is given)
+         * @param {Predicate<T>} predicate - The predicate to match in order to be counted
+         * @return {number}
+         */
+        Stream.prototype.count = function (predicate) {
+            if (predicate === void 0) { predicate = (function (_) { return true; }); }
+            var it = new CountIterator_1.CountIterator(this.it, predicate);
+            return it.process();
+        };
         /********************************************************************\
          * PREDICATE TESTS
         \********************************************************************/
@@ -231,6 +286,14 @@
         Stream.prototype.none = function (predicate) {
             var it = new NoneIterator_1.NoneIterator(this.it, predicate);
             return it.process();
+        };
+        /**
+         * Consumes the stream and tests whether or not it contains elem
+         * @param {T} elem - The item to look for
+         * @return {boolean}
+         */
+        Stream.prototype.contains = function (elem) {
+            return this.any(function (v) { return v === elem; });
         };
         Object.defineProperty(Stream.prototype, "pack", {
             /********************************************************************\

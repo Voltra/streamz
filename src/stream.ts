@@ -10,15 +10,19 @@ import { TakeIterator } from "./intermediary/indexManipulation/TakeIterator"
 import { FilterIterator } from "./intermediary/FilterIterator"
 import { PeekIterator } from "./intermediary/PeekIterator"
 import { UniqueIterator } from "./intermediary/UniqueIterator";
+import { UniqueByIterator } from "./intermediary/UniqueByIterator";
+import { ChunkIterator } from "./intermediary/ChunkIterator";
 
 import { SkipIterator } from "./intermediary/indexManipulation/SkipIterator";
 // import { BetweenIterator } from "./intermediary/indexManipulation/BetweenIterator";
 
 import { ForEachIterator } from "./terminators/ForEachIterator"
 import { ReduceIterator } from "./terminators/ReduceIterator"
+import { CountIterator } from "./terminators/CountIterator";
 import { AllIterator } from "./terminators/predicateTests/AllIterator";
 import { AnyIterator } from "./terminators/predicateTests/AnyIterator";
 import { NoneIterator } from "./terminators/predicateTests/NoneIterator";
+import { AtIndexIterator } from "./terminators/indexBased/AtIndexIterator";
 
 import { Packer } from "./packer"
 
@@ -136,7 +140,7 @@ export class Stream<T>{
     }
 
     /**
-     * FIlters values according to the given predicate
+     * Filters values according to the given predicate
      * @param {Predicate<T>} predicate - The predicate to match
      * @return {Stream}
      */
@@ -164,6 +168,28 @@ export class Stream<T>{
     public unique(){
         return Stream.make<T>(
             new UniqueIterator<T>(this.it)
+        );
+    }
+
+    /**
+     * Removes duplicates based on a selector
+     * @param {Mapper<T, U>} selector - The mapper function that generates the "key" for comparison
+     * @return {Stream}
+     */
+    public uniqueBy<U>(selector: Mapper<T, U>){
+        return Stream.make<T>(
+            new UniqueByIterator<T, U>(this.it, selector)
+        );
+    }
+
+    /**
+     * Puts the items of the stream into chunks
+     * @param {number} size - The max size of each chunk
+     * @return {Stream}
+     */
+    public chunked(size: number = 3){
+        return Stream.make<T[]>(
+            new ChunkIterator<T>(this.it, size)
         );
     }
 
@@ -207,6 +233,34 @@ export class Stream<T>{
         return this.skip(begin-1).take(takeAmount);
     }
 
+        /********************************************************************\
+         * FILTERING
+        \********************************************************************/
+    /**
+     * Only keeps non null items
+     * @return  {Stream}
+     */
+    public nonNull = () => this.filter(v => v !== null);
+
+    /**
+     * Only keeps non falsy items
+     * @return  {Stream}
+     */
+    public nonFalsy = () => this.filter(v => !!v);
+
+    /**
+     * Only keeps items that do not satisfy the given predicate
+     * @param {Predicate<T>} predicate - The predicate that must not be satisfied
+     * @return  {Stream}
+     */
+    public filterNot = (predicate: Predicate<T>) => this.filter(v => !predicate(v));
+
+    /**
+     * @alias filterOut
+     * Alias for Stream#filterNot
+     */
+    public filterOut = (predicate: Predicate<T>) => this.filterNot(predicate);
+
 
 
     /************************************************************************\
@@ -230,6 +284,18 @@ export class Stream<T>{
         const it = new ReduceIterator<Acc, T>(this.it, reducer, acc);
         return it.process();
     }
+
+    /**
+     * Counts the amount of items (that satisfy the predicate if one is given)
+     * @param {Predicate<T>} predicate - The predicate to match in order to be counted
+     * @return {number}
+     */
+    public count(predicate: Predicate<T> = (_ => true)): number{
+        const it = new CountIterator<T>(this.it, predicate);
+        return it.process();
+    }
+
+
 
         /********************************************************************\
          * PREDICATE TESTS
@@ -263,6 +329,39 @@ export class Stream<T>{
         const it = new NoneIterator<T>(this.it, predicate);
         return it.process();
     }
+
+    /**
+     * Consumes the stream and tests whether or not it contains elem
+     * @param {T} elem - The item to look for
+     * @return {boolean}
+     */
+    public contains(elem: T): boolean{
+        return this.any(v => v === elem);
+    }
+
+
+
+        /********************************************************************\
+         * INDEX BASED
+        \********************************************************************/
+    public atIndex(index: number): T|null{
+        const it = new AtIndexIterator<T>(this.it, index);
+        return it.process();
+    }
+
+    public atIndexOr(index: number, fallback: T): T{
+        return this.atIndex(index) || fallback;
+    }
+
+    public first(): T|null{
+        return this.atIndex(0);
+    }
+
+    public firstOr(fallback: T): T{
+        return this.atIndexOr(0, fallback);
+    }
+
+
 
         /********************************************************************\
          * PACKERS
