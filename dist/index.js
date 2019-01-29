@@ -4,7 +4,7 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./stream", "./packer", "./utils", "./abstractions/utils"], factory);
+        define(["require", "exports", "./stream", "./packer", "./utils", "./abstractions/utils", "./extend"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -16,9 +16,12 @@
     var utils_1 = require("./utils");
     exports.KeyGen = utils_1.KeyGen;
     exports.ValueGen = utils_1.ValueGen;
+    exports.Compare = utils_1.Compare;
     var utils_2 = require("./abstractions/utils");
     exports.emptyPayloadValue = utils_2.emptyPayloadValue;
     exports.isPayloadValueEmpty = utils_2.isPayloadValueEmpty;
     exports.streamIsValidValue = utils_2.streamIsValidValue;
     exports.invalidStreamIteratorPayload = utils_2.invalidStreamIteratorPayload;
+    var extend_1 = require("./extend");
+    exports.extend = extend_1.extend;
 });

@@ -21,6 +21,8 @@
             this.size = size;
             this.hasNext = function () { return _this.parent.hasNext(); };
             this.clone = function () { return new ChunkIterator(_this.parent.clone(), _this.size); };
+            if (this.size <= 0)
+                throw new Error("Invalid chunk size: must be greater than 0");
         }
         ChunkIterator.prototype.next = function () {
             var chunk = [];

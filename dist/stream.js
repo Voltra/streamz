@@ -4,7 +4,7 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./creators/ArrayIterator", "./creators/ObjectIterator", "./creators/RangeIterator", "./intermediary/MapIterator", "./intermediary/indexManipulation/TakeIterator", "./intermediary/FilterIterator", "./intermediary/PeekIterator", "./intermediary/UniqueIterator", "./intermediary/UniqueByIterator", "./intermediary/ChunkIterator", "./intermediary/indexManipulation/SkipIterator", "./terminators/ForEachIterator", "./terminators/ReduceIterator", "./terminators/CountIterator", "./terminators/predicateTests/AllIterator", "./terminators/predicateTests/AnyIterator", "./terminators/predicateTests/NoneIterator", "./packer"], factory);
+        define(["require", "exports", "./creators/ArrayIterator", "./creators/ObjectIterator", "./creators/RangeIterator", "./creators/MapIterator", "./creators/SetIterator", "./intermediary/MapIterator", "./intermediary/indexManipulation/TakeIterator", "./intermediary/FilterIterator", "./intermediary/PeekIterator", "./intermediary/UniqueIterator", "./intermediary/UniqueByIterator", "./intermediary/ChunkIterator", "./intermediary/zipping/ZipIterator", "./intermediary/zipping/ZipByIterator", "./intermediary/indexManipulation/SkipIterator", "./intermediary/indexManipulation/TakeWhileIterator", "./terminators/ForEachIterator", "./terminators/ReduceIterator", "./terminators/CountIterator", "./terminators/predicateTests/AllIterator", "./terminators/predicateTests/AnyIterator", "./terminators/predicateTests/NoneIterator", "./terminators/indexBased/AtIndexIterator", "./terminators/zipping/UnzipIterator", "./terminators/zipping/UnzipByIterator", "./terminators/zipping/UnzipViaIterator", "./packer", "./utils"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -12,22 +12,32 @@
     var ArrayIterator_1 = require("./creators/ArrayIterator");
     var ObjectIterator_1 = require("./creators/ObjectIterator");
     var RangeIterator_1 = require("./creators/RangeIterator");
-    var MapIterator_1 = require("./intermediary/MapIterator");
+    var MapIterator_1 = require("./creators/MapIterator");
+    var SetIterator_1 = require("./creators/SetIterator");
+    var MapIterator_2 = require("./intermediary/MapIterator");
     var TakeIterator_1 = require("./intermediary/indexManipulation/TakeIterator");
     var FilterIterator_1 = require("./intermediary/FilterIterator");
     var PeekIterator_1 = require("./intermediary/PeekIterator");
     var UniqueIterator_1 = require("./intermediary/UniqueIterator");
     var UniqueByIterator_1 = require("./intermediary/UniqueByIterator");
     var ChunkIterator_1 = require("./intermediary/ChunkIterator");
+    var ZipIterator_1 = require("./intermediary/zipping/ZipIterator");
+    var ZipByIterator_1 = require("./intermediary/zipping/ZipByIterator");
     var SkipIterator_1 = require("./intermediary/indexManipulation/SkipIterator");
     // import { BetweenIterator } from "./intermediary/indexManipulation/BetweenIterator";
+    var TakeWhileIterator_1 = require("./intermediary/indexManipulation/TakeWhileIterator");
     var ForEachIterator_1 = require("./terminators/ForEachIterator");
     var ReduceIterator_1 = require("./terminators/ReduceIterator");
     var CountIterator_1 = require("./terminators/CountIterator");
     var AllIterator_1 = require("./terminators/predicateTests/AllIterator");
     var AnyIterator_1 = require("./terminators/predicateTests/AnyIterator");
     var NoneIterator_1 = require("./terminators/predicateTests/NoneIterator");
+    var AtIndexIterator_1 = require("./terminators/indexBased/AtIndexIterator");
+    var UnzipIterator_1 = require("./terminators/zipping/UnzipIterator");
+    var UnzipByIterator_1 = require("./terminators/zipping/UnzipByIterator");
+    var UnzipViaIterator_1 = require("./terminators/zipping/UnzipViaIterator");
     var packer_1 = require("./packer");
+    var utils_1 = require("./utils");
     /**
      * @class Stream
      * An object capable of lazily manipulating collections
@@ -63,6 +73,12 @@
              * Alias for Stream#filterNot
              */
             this.filterOut = function (predicate) { return _this.filterNot(predicate); };
+            /**
+             * Only keeps items that are instance of the provided class
+             * @param {Function} _class - The class to test from
+             * @return  {Stream}
+             */
+            this.filterIsIntance = function (_class) { return _this.filter(function (v) { return v instanceof Function; }); };
         }
         /************************************************************************\
          * FACTORIES
@@ -95,11 +111,27 @@
         };
         /**
          * Creates a stream from the entries of the given object
-         * @param obj - The object to create a stream from
+         * @param {obj} obj - The object to create a stream from
          * @return {Stream}
          */
         Stream.fromObject = function (obj) {
             return this.make(new ObjectIterator_1.ObjectIterator(obj));
+        };
+        /**
+         * Creates a stream from the entries of the given map
+         * @param {Map} map - The map to create a stream from
+         * @return {Stream}
+         */
+        Stream.fromMap = function (map) {
+            return this.make(new MapIterator_1.MapIterator(map));
+        };
+        /**
+         * Creates a stream from the values of the given set
+         * @param {Set} set - The set to create a stream from
+         * @return {Stream}
+         */
+        Stream.fromSet = function (set) {
+            return this.make(new SetIterator_1.SetIterator(set));
         };
         /**
          * Creates a stream for a range of numbers
@@ -147,7 +179,7 @@
          * @return {Stream}
          */
         Stream.prototype.map = function (mapper) {
-            return Stream.make(new MapIterator_1.MapIterator(this.it, mapper));
+            return Stream.make(new MapIterator_2.MapIterator(this.it, mapper));
         };
         /**
          * Filters values according to the given predicate
@@ -189,6 +221,45 @@
             if (size === void 0) { size = 3; }
             return Stream.make(new ChunkIterator_1.ChunkIterator(this.it, size));
         };
+        /************************************************************************\
+         * ZIPPING
+        \************************************************************************/
+        /**
+         * Zips this stream with another
+         * @param {Stream} stream - The stream to zip with
+         * @return {Stream}
+         */
+        Stream.prototype.zip = function (stream) {
+            return Stream.make(new ZipIterator_1.ZipIterator(this.it, stream.it));
+        };
+        /**
+         * Zips this stream with another using the zipping function
+         * @param {Stream} stream - The stream to zip with
+         * @param {BiFn<V, T, U>} mapper - Maps both items into the new item
+         * @return {Stream}
+         */
+        Stream.prototype.zipBy = function (stream, mapper) {
+            return Stream.make(new ZipByIterator_1.ZipByIterator(this.it, stream.it, mapper));
+        };
+        /**
+         * Static helper for combining streams
+         * @param {Stream} lhs - Ths LHS stream to zip with
+         * @param {Stream} rhs - The RHS stream to zip with
+         * @return {Stream}
+         */
+        Stream.zip = function (lhs, rhs) {
+            return lhs.zip(rhs);
+        };
+        /**
+         * Static helper for combining streams using a zipper function
+         * @param {Stream} lhs - Ths LHS stream to zip with
+         * @param {Stream} rhs - The RHS stream to zip with
+         * @param {BiFn<V, T, U>} zipper - The zipper function
+         * @return {Stream}
+         */
+        Stream.zipBy = function (lhs, rhs, zipper) {
+            return lhs.zipBy(rhs, zipper);
+        };
         /********************************************************************\
          * INDEX MANIPULATION
         \********************************************************************/
@@ -226,6 +297,22 @@
             ); */
             var takeAmount = excludeRight ? end - begin : end - begin + 1;
             return this.skip(begin - 1).take(takeAmount);
+        };
+        /**
+         * Keeps items that satisfy the predicate until one does not
+         * @param {Predicate<T>} predicate - The predicate to satisfy
+         * @return {Stream}
+         */
+        Stream.prototype.takeWhile = function (predicate) {
+            return Stream.make(new TakeWhileIterator_1.TakeWhileIterator(this.it, predicate));
+        };
+        /**
+         * Keeps items that do not satisfy the predicate until one does
+         * @param {Predicate<T>} predicate - The predicate to not satisfy
+         * @return {Stream}
+         */
+        Stream.prototype.takeUntil = function (predicate) {
+            return this.takeWhile(function (v) { return !predicate(v); });
         };
         /************************************************************************\
          * TERMINATORS
@@ -295,6 +382,22 @@
         Stream.prototype.contains = function (elem) {
             return this.any(function (v) { return v === elem; });
         };
+        /********************************************************************\
+         * INDEX BASED
+        \********************************************************************/
+        Stream.prototype.atIndex = function (index) {
+            var it = new AtIndexIterator_1.AtIndexIterator(this.it, index);
+            return it.process();
+        };
+        Stream.prototype.atIndexOr = function (index, fallback) {
+            return this.atIndex(index) || fallback;
+        };
+        Stream.prototype.first = function () {
+            return this.atIndex(0);
+        };
+        Stream.prototype.firstOr = function (fallback) {
+            return this.atIndexOr(0, fallback);
+        };
         Object.defineProperty(Stream.prototype, "pack", {
             /********************************************************************\
              * PACKERS
@@ -309,6 +412,71 @@
             enumerable: true,
             configurable: true
         });
+        /************************************************************************\
+         * ZIPPING
+        \************************************************************************/
+        /**
+         * Zips then pack to an object (using this as keys and the provided stream as values)
+         * @param {Stream} stream - The stream to zip with
+         * @return {object}
+         */
+        Stream.prototype.zipToObject = function (stream) {
+            return this.zip(stream).pack.toObject(utils_1.KeyGen.entries, utils_1.ValueGen.entries);
+        };
+        /**
+         * Static helper for zipping to an object
+         * @param keys - The stream of keys
+         * @param values - The stream of values
+         * @return {object}
+         */
+        Stream.zipToObject = function (keys, values) {
+            return keys.zipToObject(values);
+        };
+        /**
+         * Consumes the stream and unzips it
+         * @return {[X[], U[]]}
+         */
+        Stream.prototype.unzip = function () {
+            var it = new UnzipIterator_1.UnzipIterator(this.it);
+            return it.process();
+        };
+        /**
+         * Consumes the stream and unzips using the mapper functions
+         * @param {Mapper<T, X>} firstGen - Maps the item to the first value of the result
+         * @param {Mapper<T, U>} lastGen - Maps the item to the last value of the result
+         * @return {[X[], U[]]}
+         */
+        Stream.prototype.unzipBy = function (firstGen, lastGen) {
+            var it = new UnzipByIterator_1.UnzipByIterator(this.it, firstGen, lastGen);
+            return it.process();
+        };
+        /**
+         * Consumes the stream and unzips via the provided mapper functions
+         * @param {Mapper<T, (X|U)[]>} mapper - Maps the item to a [X, U]
+         * @return {[X[], U[]]}
+         */
+        Stream.prototype.unzipVia = function (mapper) {
+            var it = new UnzipViaIterator_1.UnzipViaIterator(this.it, mapper);
+            return it.process();
+        };
+        /************************************************************************\
+         * SORTING
+        \************************************************************************/
+        Stream.prototype.sortedWith = function (comparator) {
+            return this.pack.toArray().sort(comparator);
+        };
+        Stream.prototype.sortedBy = function (mapper) {
+            return this.sortedWith(utils_1.Compare.mapped.asc(mapper));
+        };
+        Stream.prototype.sortedByDesc = function (mapper) {
+            return this.sortedWith(utils_1.Compare.mapped.desc(mapper));
+        };
+        Stream.prototype.sorted = function () {
+            return this.sortedBy(function (x) { return x; });
+        };
+        Stream.prototype.sortedDesc = function () {
+            return this.sortedByDesc(function (x) { return x; });
+        };
         return Stream;
     }());
     exports.Stream = Stream;

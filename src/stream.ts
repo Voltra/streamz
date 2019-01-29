@@ -1,9 +1,11 @@
 import { BaseStreamIterator } from "./abstractions/BaseStreamIterator"
-import { Mapper, Predicate, Consumer, Reducer } from "./types/functions"
+import { Mapper, Predicate, Consumer, Reducer, BiFn } from "./types/functions"
 
 import { ArrayIterator } from "./creators/ArrayIterator"
 import { ObjectIterator } from "./creators/ObjectIterator"
 import { RangeIterator } from "./creators/RangeIterator"
+import { MapIterator as MapCreatorIterator } from "./creators/MapIterator"
+import { SetIterator } from "./creators/SetIterator"
 
 import { MapIterator } from "./intermediary/MapIterator"
 import { TakeIterator } from "./intermediary/indexManipulation/TakeIterator"
@@ -12,9 +14,12 @@ import { PeekIterator } from "./intermediary/PeekIterator"
 import { UniqueIterator } from "./intermediary/UniqueIterator";
 import { UniqueByIterator } from "./intermediary/UniqueByIterator";
 import { ChunkIterator } from "./intermediary/ChunkIterator";
+import { ZipIterator } from "./intermediary/zipping/ZipIterator";
+import { ZipByIterator } from "./intermediary/zipping/ZipByIterator";
 
 import { SkipIterator } from "./intermediary/indexManipulation/SkipIterator";
 // import { BetweenIterator } from "./intermediary/indexManipulation/BetweenIterator";
+import { TakeWhileIterator } from "./intermediary/indexManipulation/TakeWhileIterator";
 
 import { ForEachIterator } from "./terminators/ForEachIterator"
 import { ReduceIterator } from "./terminators/ReduceIterator"
@@ -23,8 +28,12 @@ import { AllIterator } from "./terminators/predicateTests/AllIterator";
 import { AnyIterator } from "./terminators/predicateTests/AnyIterator";
 import { NoneIterator } from "./terminators/predicateTests/NoneIterator";
 import { AtIndexIterator } from "./terminators/indexBased/AtIndexIterator";
+import { UnzipIterator } from "./terminators/zipping/UnzipIterator";
+import { UnzipByIterator } from "./terminators/zipping/UnzipByIterator";
+import { UnzipViaIterator } from "./terminators/zipping/UnzipViaIterator";
 
 import { Packer } from "./packer"
+import { KeyGen, ValueGen, Compare } from "./utils";
 
 /**
  * @class Stream
@@ -72,12 +81,34 @@ export class Stream<T>{
 
     /**
      * Creates a stream from the entries of the given object
-     * @param obj - The object to create a stream from
+     * @param {obj} obj - The object to create a stream from
      * @return {Stream}
      */
     public static fromObject(obj: object): Stream<[string, any]>{
         return this.make<[string, any]>(
             new ObjectIterator(obj)
+        );
+    }
+
+    /**
+     * Creates a stream from the entries of the given map
+     * @param {Map} map - The map to create a stream from
+     * @return {Stream}
+     */
+    public static fromMap<K, V>(map: Map<K, V>): Stream<(K|V)[]>{
+        return this.make(
+            new MapCreatorIterator(map)
+        );
+    }
+
+    /**
+     * Creates a stream from the values of the given set
+     * @param {Set} set - The set to create a stream from
+     * @return {Stream}
+     */
+    public static fromSet<T>(set: Set<T>): Stream<T>{
+        return this.make(
+            new SetIterator(set)
         );
     }
 
@@ -193,6 +224,53 @@ export class Stream<T>{
         );
     }
 
+        /************************************************************************\
+         * ZIPPING
+        \************************************************************************/
+    /**
+     * Zips this stream with another
+     * @param {Stream} stream - The stream to zip with
+     * @return {Stream}
+     */
+    public zip<U>(stream: Stream<U>){
+        return Stream.make<[T, U]>(
+            new ZipIterator<T, U>(this.it, stream.it)
+        );
+    }
+
+    /**
+     * Zips this stream with another using the zipping function
+     * @param {Stream} stream - The stream to zip with
+     * @param {BiFn<V, T, U>} mapper - Maps both items into the new item
+     * @return {Stream}
+     */
+    public zipBy<U, V>(stream: Stream<U>, mapper: BiFn<V, T, U>){
+        return Stream.make<V>(
+            new ZipByIterator<T, U, V>(this.it, stream.it, mapper)
+        );
+    }
+
+    /**
+     * Static helper for combining streams
+     * @param {Stream} lhs - Ths LHS stream to zip with
+     * @param {Stream} rhs - The RHS stream to zip with
+     * @return {Stream}
+     */
+    public static zip<T, U>(lhs: Stream<T>, rhs: Stream<U>): Stream<[T, U]>{
+        return lhs.zip<U>(rhs);
+    }
+
+    /**
+     * Static helper for combining streams using a zipper function
+     * @param {Stream} lhs - Ths LHS stream to zip with
+     * @param {Stream} rhs - The RHS stream to zip with
+     * @param {BiFn<V, T, U>} zipper - The zipper function
+     * @return {Stream}
+     */
+    public static zipBy<T, U, V>(lhs: Stream<T>, rhs: Stream<U>, zipper: BiFn<V, T, U>): Stream<V>{
+        return lhs.zipBy<U, V>(rhs, zipper);
+    }
+
         /********************************************************************\
          * INDEX MANIPULATION
         \********************************************************************/
@@ -233,6 +311,26 @@ export class Stream<T>{
         return this.skip(begin-1).take(takeAmount);
     }
 
+    /**
+     * Keeps items that satisfy the predicate until one does not
+     * @param {Predicate<T>} predicate - The predicate to satisfy
+     * @return {Stream}
+     */
+    public takeWhile(predicate: Predicate<T>){
+        return Stream.make<T>(
+            new TakeWhileIterator(this.it, predicate)
+        );
+    }
+
+    /**
+     * Keeps items that do not satisfy the predicate until one does
+     * @param {Predicate<T>} predicate - The predicate to not satisfy
+     * @return {Stream}
+     */
+    public takeUntil(predicate: Predicate<T>){
+        return this.takeWhile(v => !predicate(v));
+    }
+
         /********************************************************************\
          * FILTERING
         \********************************************************************/
@@ -260,6 +358,13 @@ export class Stream<T>{
      * Alias for Stream#filterNot
      */
     public filterOut = (predicate: Predicate<T>) => this.filterNot(predicate);
+
+    /**
+     * Only keeps items that are instance of the provided class
+     * @param {Function} _class - The class to test from
+     * @return  {Stream}
+     */
+    public filterIsIntance = (_class: Function) => this.filter(v => v instanceof Function);
 
 
 
@@ -372,5 +477,80 @@ export class Stream<T>{
      */
     public get pack(): Packer<T>{
         return new Packer(this.it);
+    }
+
+        /************************************************************************\
+         * ZIPPING
+        \************************************************************************/
+    /**
+     * Zips then pack to an object (using this as keys and the provided stream as values)
+     * @param {Stream} stream - The stream to zip with
+     * @return {object}
+     */
+    public zipToObject<U>(stream: Stream<U>){
+        return this.zip(stream).pack.toObject(KeyGen.entries, ValueGen.entries);
+    }
+
+    /**
+     * Static helper for zipping to an object
+     * @param keys - The stream of keys
+     * @param values - The stream of values
+     * @return {object}
+     */
+    public static zipToObject<T, U>(keys: Stream<T>, values: Stream<U>){
+        return keys.zipToObject(values);
+    }
+
+    /**
+     * Consumes the stream and unzips it
+     * @return {[X[], U[]]}
+     */
+    public unzip<X, U>(){
+        const it = new UnzipIterator<X, U>(this.it as BaseStreamIterator<[X, U]>);
+        return it.process();
+    }
+
+    /**
+     * Consumes the stream and unzips using the mapper functions
+     * @param {Mapper<T, X>} firstGen - Maps the item to the first value of the result
+     * @param {Mapper<T, U>} lastGen - Maps the item to the last value of the result
+     * @return {[X[], U[]]}
+     */
+    public unzipBy<X, U>(firstGen: Mapper<T, X>, lastGen: Mapper<T, U>){
+        const it = new UnzipByIterator<X, U, T>(this.it, firstGen, lastGen);
+        return it.process();
+    }
+
+    /**
+     * Consumes the stream and unzips via the provided mapper functions
+     * @param {Mapper<T, (X|U)[]>} mapper - Maps the item to a [X, U]
+     * @return {[X[], U[]]}
+     */
+    public unzipVia<X, U>(mapper: Mapper<T, [X, U]>){
+        const it = new UnzipViaIterator<X, U, T>(this.it, mapper);
+        return it.process();
+    }
+
+        /************************************************************************\
+         * SORTING
+        \************************************************************************/
+    public sortedWith(comparator: BiFn<number, T, T>){
+        return this.pack.toArray().sort(comparator);
+    }
+
+    public sortedBy<U>(mapper: Mapper<T, U>){
+        return this.sortedWith(Compare.mapped.asc<T, U>(mapper));
+    }
+
+    public sortedByDesc<U>(mapper: Mapper<T, U>){
+        return this.sortedWith(Compare.mapped.desc<T, U>(mapper));
+    }
+
+    public sorted(){
+        return this.sortedBy<T>(x => x);
+    }
+
+    public sortedDesc(){
+        return this.sortedByDesc<T>(x => x);
     }
 }
