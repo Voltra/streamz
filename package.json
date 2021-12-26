@@ -3,8 +3,15 @@
 	"version": "1.0.2",
 	"description": "Collection manipulation library that uses lazy evaluation for performances",
 	"main": "dist/index.js",
+	"module": "esm/index.js",
+	"types": "types/index.d.ts",
+	"sideEffects": false,
 	"scripts": {
-		"build": "tsc"
+		"start": "npm run build",
+		"build": "npm run transpile && npm run bundle",
+		"bundle": "webpack --mode production",
+		"transpile": "tsc",
+		"watch": "tsc --watch"
 	},
 	"repository": {
 		"type": "git",
@@ -17,7 +24,16 @@
 	},
 	"homepage": "https://github.com/Voltra/streamz#readme",
 	"devDependencies": {
-		"typescript": "^4.5.4"
+		"@babel/cli": "^7.16.0",
+		"@babel/core": "^7.16.5",
+		"@babel/plugin-transform-runtime": "^7.16.5",
+		"@babel/preset-env": "^7.16.5",
+		"@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
+		"babel-loader": "^8.2.3",
+		"colored-progress-bar-webpack-plugin": "^1.2.4",
+		"typescript": "^4.5.4",
+		"webpack": "^5.65.0",
+		"webpack-cli": "^4.9.1"
 	},
 	"keywords": [
 		"functional",

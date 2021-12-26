@@ -1,0 +1,12 @@
+import { Either } from "./helpers";
+export declare type Fn<R, T> = (input: T) => R;
+export declare type BiFn<R, T, U> = (firstArg: T, secondArg: U) => R;
+export declare type Producer<T> = () => T;
+export declare type Consumer<T> = Fn<void, T>;
+export declare type Predicate<T> = Fn<boolean, T>;
+export declare type Mapper<T, U> = Fn<U, T>;
+export declare type Reducer<Acc, Elem> = BiFn<Acc, Acc, Elem>;
+export declare type Callback = () => void;
+export declare type GeneratorMapper<T, U> = (source: Generator<T>) => Generator<U>;
+export declare type FlatMapper<T, U> = Mapper<T, Either<U, Iterable<U>>>;
+export declare type Comparator<T, U = T> = (lhs: T, rhs: U) => number;

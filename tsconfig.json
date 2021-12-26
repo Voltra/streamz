@@ -1,20 +1,22 @@
 {
 	"compilerOptions": {
-		"target": "es5",
-		"downlevelIteration": true,
+		"module": "ES6",
+		"target": "es6",
 		"lib": [
 			"DOM",
 			"ESNext"
 		],
-		"module": "umd",
+		"sourceMap": true,
+		"sourceRoot": "./src",
+		"allowSyntheticDefaultImports": true,
+		"declaration": true,
+		"downlevelIteration": true,
 		"strict": true,
 		"strictNullChecks": true,
 		"baseUrl": "./src",
-		"outDir": "./dist",
+		"outDir": "./esm",
+		"declarationDir": "./types",
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true
 	},
-	"files": [
-		"./src/index.ts"
-	]
 }
