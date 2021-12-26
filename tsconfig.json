@@ -1,22 +1,20 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "downlevelIteration": true,
-    "lib": [
-      "es2017",
-      "es6",
-      "es2015",
-      "dom"
-    ],
-    "module": "umd",
-    /* "strict": true,
-    "strictNullChecks": true, */
-    "baseUrl": "./src",
-    "outDir": "./dist",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  },
-  "files": [
-    "./src/index.ts"
-  ]
+	"compilerOptions": {
+		"target": "es5",
+		"downlevelIteration": true,
+		"lib": [
+			"DOM",
+			"ESNext"
+		],
+		"module": "umd",
+		"strict": true,
+		"strictNullChecks": true,
+		"baseUrl": "./src",
+		"outDir": "./dist",
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
+	},
+	"files": [
+		"./src/index.ts"
+	]
 }

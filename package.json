@@ -1,34 +1,34 @@
 {
-  "name": "@voltra/streamz",
-  "version": "1.0.2",
-  "description": "Collection manipulation library that uses lazy evaluation for performances",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Voltra/streamz.git"
-  },
-  "author": "Ludwig GUERIN <ludwig.guerin.98@gmx.fr>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Voltra/streamz/issues"
-  },
-  "homepage": "https://github.com/Voltra/streamz#readme",
-  "devDependencies": {
-    "typescript": "^3.2.4"
-  },
-  "keywords": [
-    "functional",
-    "sequence",
-    "collection",
-    "processing",
-    "lazy",
-    "iterator",
-    "array",
-    "object",
-    "map",
-    "set"
-  ]
+	"name": "@voltra/streamz",
+	"version": "1.0.2",
+	"description": "Collection manipulation library that uses lazy evaluation for performances",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Voltra/streamz.git"
+	},
+	"author": "Ludwig GUERIN <ludwig.guerin.98@gmx.fr>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/Voltra/streamz/issues"
+	},
+	"homepage": "https://github.com/Voltra/streamz#readme",
+	"devDependencies": {
+		"typescript": "^4.5.4"
+	},
+	"keywords": [
+		"functional",
+		"sequence",
+		"collection",
+		"processing",
+		"lazy",
+		"iterator",
+		"array",
+		"object",
+		"map",
+		"set"
+	]
 }
